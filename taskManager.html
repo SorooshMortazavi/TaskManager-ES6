@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+    body {
+        direction: rtl;
+    }
+
+    form {
+        text-align: right;
+
+    }
+
+    #btn-submit {
+        background-color: brown;
+        color: aliceblue;
+    }
+
+    #input-description {
+        width: 50%;
+    }
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/Chalarangelo/mini.css/v3.0.1/dist/mini-default.min.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <form id="get-name">
+        <span>لطفا نام خود را وارد کنید:</span>
+        <input id="user-name" type="text">
+        <button id="btn-submit" type="submit"> ثبت</button>
+    </form>
+
+    <form id="set-task">
+        <span>ساختن وظیفه ی جدید </span><br>
+        <span>عنوان وظیفه:</span>
+        <input id="input-title" type="text"><br>
+        <span> شرح وظیفه:</span>
+        <input id="input-description" type="text">
+        <button id="btn-submit" type="submit"> ثبت</button>
+
+    </form>
+    <div id="div-task">
+    </div>
+    <script>
+        //this function is for get user name
+        //or say welcome to the user
+        function handleWelcom() {
+            var form = document.getElementById('get-name')
+            if (localStorage.getItem('userName') == null) {
+                form.addEventListener('submit', (event) => {
+                    event.preventDefault()
+                    userName = document.getElementById('user-name').value
+                    localStorage.setItem('userName', userName)
+                    welcome();
+
+
+                })
+            } else {
+                welcome();
+            }
+
+            function welcome() {
+                var h3 = document.createElement('h3')
+                userName = localStorage.getItem('userName')
+                h3.innerHTML = userName + " به برنامه ی مدیریت وظایف خوش آمدید"
+                form.innerHTML = '';
+                form.appendChild(h3);
+            }
+        }
+        handleWelcom();
+
+        class Task {
+
+            fatherTask = null;
+            isDone = false;
+            //we use creationTime as id for div elemet of father task
+            creationTime = new Date();
+            subTasks = [];
+            buttonDone = document.createElement('button');
+            buttonAddTask = document.createElement('button');
+            details = document.createElement('details');
+            divTask = document.createElement('div')
+
+            constructor(title, description) {
+                if(title.length==0||description.length==0){
+                    alert("عنوان و شرح وظیفه نمیتواند خالی باشد.")
+                    throw new Error("complet the title or description")
+                }
+                this.title = title;
+                this.description = description;
+
+                // this is for set the task done
+                this.buttonDone.addEventListener('click', (event) => {
+                    if (this.isDone == false) {
+                        this.isDone = true
+                        this.styleButtonDone()
+                    } else {
+                        this.isDone = false
+                        this.styleButtonDone()
+                    }
+                })
+            }
+
+            goDone() {
+                this.isDone = true;
+            }
+
+            // show a task to document
+            showMainTask() {
+                 
+                let mainDivTask = document.getElementById('div-task')
+                // mainDivTask.innerHTML=''
+               // let divTask = document.createElement('div')
+                this.divTask.setAttribute('id', this.creationTime)
+                let title = document.createElement('h2')
+                title.innerHTML = this.title
+                let time = document.createElement('h4')
+                time.innerHTML = "تاریخ ساخت: "+gregorian_to_jalali(this.creationTime);
+                time.style.color = 'red'
+                let descriptionBody = document.createElement('p')
+                descriptionBody.innerHTML = this.description;
+                this.divTask.appendChild(title)
+                this.divTask.appendChild(time)
+                this.divTask.appendChild(descriptionBody);
+                this.styleButtonDone();
+                this.styleButtonAddTask(this.details);
+                this.divTask.appendChild(this.buttonDone)
+                this.divTask.appendChild(this.buttonAddTask);
+                mainDivTask.appendChild( this.divTask)
+                if (this.subTasks.length > 0) {
+
+                    this.showSubTask(this.details);
+                    //console.log('soroosh')
+
+                }
+                mainDivTask.appendChild(document.createElement('hr'))
+
+            }
+            //show a sub task under a main task in document
+            showSubTask(details) {
+
+                details.innerHTML = ''
+                let summary = document.createElement('summary')
+                summary.innerHTML = "لیست زیر وظیفه های " + this.title
+                this.details.appendChild(summary);
+                for (let i = 0; i < this.subTasks.length; i++) {
+                    let mainDiv = document.getElementById(this.creationTime)
+                    let divTask = document.createElement('div')
+                    let title = document.createElement('h4')
+                    title.innerHTML = this.subTasks[i].title
+                    let time = document.createElement('h6')
+                    time.innerHTML =gregorian_to_jalali(this.subTasks[i].creationTime) ;
+                    time.style.color = 'blue'
+                    let descriptionBody = document.createElement('p')
+                    descriptionBody.innerHTML = this.subTasks[i].description;
+                    divTask.appendChild(title)
+                    divTask.appendChild(time)
+                    divTask.appendChild(descriptionBody);
+                    this.subTasks[i].styleButtonDone();
+                    divTask.appendChild(this.subTasks[i].buttonDone)
+                    details.appendChild(divTask)
+                    mainDiv.appendChild(details);
+                }
+
+
+            }
+
+            //change button text
+            styleButtonDone() {
+
+                if (this.isDone == false) {
+                    this.buttonDone.innerHTML = 'انجام نشده'
+                } else {
+                    this.buttonDone.innerHTML = 'انجام شده'
+                }
+            }
+
+
+            //this method is for building a form for add a sub task to a main task
+            styleButtonAddTask(details) {
+                this.buttonAddTask.innerHTML = 'اضافه کردن زیر وظیفه'
+                this.buttonAddTask.addEventListener('click', (event) => {
+                    let divMainTask = document.getElementById(this.creationTime);
+                    let form = document.createElement('form')
+                    let inputTitle = document.createElement('input')
+                    let inputDescription = document.createElement('input')
+                    let submit = document.createElement('button')
+                    submit.innerHTML = 'ثبت'
+                    inputTitle.placeholder = 'عنوان را وارد کنید'
+                    inputDescription.placeholder = 'شرح وظیفه'
+                    submit.setAttribute('type', 'submit');
+                    form.appendChild(inputTitle)
+                    form.appendChild(inputDescription)
+                    form.appendChild(submit);
+                    divMainTask.appendChild(form);
+                    form.addEventListener('submit', (ev) => {
+                        ev.preventDefault();
+                        let task = new Task(inputTitle.value, inputDescription.value)
+                        this.subTasks.push(task);
+                        console.log(this.subTasks);
+                        ///////////////////////////////////////////
+                        /////////////////////
+                        this.showSubTask(this.details);
+                        form.remove();
+
+                    })
+
+                })
+            }
+
+        }
+
+
+        //this is for build task
+        document.getElementById('set-task').addEventListener("submit", (ev) => {
+            ev.preventDefault();
+            var task = new Task(document.getElementById('input-title').value, document.getElementById(
+                'input-description').value);
+            task.showMainTask();
+            console.log(gregorian_to_jalali(task.creationTime))
+        })
+
+
+        //this method convert gregorian date to jalali date
+        function gregorian_to_jalali(date) {
+            gy=date.getFullYear();
+            gm=date.getMonth();
+            gd=date.getDay();
+            var g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+            var jy = (gy <= 1600) ? 0 : 979;
+            gy -= (gy <= 1600) ? 621 : 1600;
+            var gy2 = (gm > 2) ? (gy + 1) : gy;
+            var days = (365 * gy) + (parseInt((gy2 + 3) / 4)) - (parseInt((gy2 + 99) / 100)) +
+                (parseInt((gy2 + 399) / 400)) - 80 + gd + g_d_m[gm - 1];
+            jy += 33 * (parseInt(days / 12053));
+            days %= 12053;
+            jy += 4 * (parseInt(days / 1461));
+            days %= 1461;
+            jy += parseInt((days - 1) / 365);
+            if (days > 365) days = (days - 1) % 365;
+            var jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+            var jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+            //return [jy, jm, jd];
+            return jy+'/'+jm+'/'+jd
+        }
+
+    </script>
+</body>
+
+</html>
