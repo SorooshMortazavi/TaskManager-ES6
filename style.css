@@ -1,0 +1,17 @@
+body {
+    direction: rtl;
+}
+
+form {
+    text-align: right;
+
+}
+
+#btn-submit {
+    background-color: brown;
+    color: aliceblue;
+}
+
+#input-description {
+    width: 50%;
+}
