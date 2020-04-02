@@ -1,4 +1,4 @@
-# TaskManaget-ES6
+# TaskManager-ES6
 this is a simple and practical application with es6 and html.
 this project writed for persian language.
 with this app you can add Task and sub task to manage.
